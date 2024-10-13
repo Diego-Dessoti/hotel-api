@@ -2,9 +2,9 @@ package com.example.hotel_reservation_system.controller;
 
 
 import com.example.hotel_reservation_system.config.TokenService;
-import com.example.hotel_reservation_system.dto.LoginRequestDTO;
-import com.example.hotel_reservation_system.dto.RegisterRequestDTO;
-import com.example.hotel_reservation_system.dto.ResponseDTO;
+import com.example.hotel_reservation_system.dto.auth.LoginRequestDTO;
+import com.example.hotel_reservation_system.dto.auth.RegisterRequestDTO;
+import com.example.hotel_reservation_system.dto.auth.ResponseDTO;
 import com.example.hotel_reservation_system.model.Client;
 import com.example.hotel_reservation_system.model.User;
 import com.example.hotel_reservation_system.repositories.UserRepository;
@@ -33,7 +33,10 @@ public class AuthController {
         User user = this.repository.findByEmail(body.email()).orElseThrow(() -> new RuntimeException("User not found"));
         if(passwordEncoder.matches(body.password(),user.getPassword())){
             String token = this.tokenService.generateToken(user);
-            return ResponseEntity.ok().body(new ResponseDTO(user.getName(), token));
+            return ResponseEntity.ok().body((new ResponseDTO(user.getId(),
+                    user.getClient().getId(), user.getEmail(),
+                    user.getName(), user.getClient().getPhone(),
+                    user.getClient().getAddress(), token )));
         };
         return ResponseEntity.badRequest().build();
     }
@@ -55,7 +58,11 @@ public class AuthController {
 
 
             String token = this.tokenService.generateToken(newUser);
-            return ResponseEntity.ok().body(new ResponseDTO(newUser.getName(), token));
+            return ResponseEntity.ok().body(new ResponseDTO(newUser.getId(),
+                                                    newUser.getClient().getId(), newUser.getEmail(),
+                                                    newUser.getName(), newUser.getClient().getPhone(),
+                                                    newUser.getClient().getAddress(), token ));
+
         }
 
 

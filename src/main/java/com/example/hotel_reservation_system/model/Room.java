@@ -1,5 +1,6 @@
 package com.example.hotel_reservation_system.model;
 
+import com.example.hotel_reservation_system.dto.room.RegisterRoomRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,4 +21,12 @@ public class Room {
     private Double price;
     private Byte available;
     private String description;
+
+    public Room(RegisterRoomRequestDTO dto){
+        this.id = null;
+        this.type = dto.type();
+        this.price = dto.price();
+        this.available = dto.avaliable();
+        this.description = dto.description();
+    }
 }
