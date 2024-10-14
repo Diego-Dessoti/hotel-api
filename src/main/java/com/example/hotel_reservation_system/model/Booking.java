@@ -1,5 +1,6 @@
 package com.example.hotel_reservation_system.model;
 
+import com.example.hotel_reservation_system.dto.booking.RegisterBookingDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -20,4 +20,8 @@ public class ClientService {
             throw e;
         }
     }
+
+    public Client findById(Long id){
+        return repository.findById(id).get();
+    }
 }
