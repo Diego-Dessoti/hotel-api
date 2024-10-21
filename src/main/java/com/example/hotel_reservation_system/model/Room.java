@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "room")
 @Data
@@ -22,11 +24,14 @@ public class Room {
     private Byte available;
     private String description;
 
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoomImages> images;
+
     public Room(RegisterRoomRequestDTO dto){
         this.id = null;
         this.type = dto.type();
         this.price = dto.price();
-        this.available = dto.avaliable();
+        this.available = dto.available();
         this.description = dto.description();
     }
 }

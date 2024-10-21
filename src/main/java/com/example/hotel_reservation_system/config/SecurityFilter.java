@@ -3,6 +3,7 @@ package com.example.hotel_reservation_system.config;
 
 
 
+import com.example.hotel_reservation_system.exceptions.ExpiredTokenException;
 import com.example.hotel_reservation_system.model.User;
 import com.example.hotel_reservation_system.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -27,18 +28,38 @@ public class SecurityFilter extends OncePerRequestFilter {
     UserRepository userRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var token = this.recoverToken(request);
-        var login = tokenService.validateToken(token);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        try {
+            var token = this.recoverToken(request);
 
-        if(login != null){
-            User user = userRepository.findByEmail(login).orElseThrow(() -> new RuntimeException("User Not Found"));
-            var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-            var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (token != null) {
+                var login = tokenService.validateToken(token);
+
+                if (login != null) {
+                    // Se o token for válido, autentica o usuário
+                    User user = userRepository.findByEmail(login)
+                            .orElseThrow(() -> new RuntimeException("User Not Found"));
+                    var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+                    var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+
+            filterChain.doFilter(request, response);
+        } catch (ExpiredTokenException e) {
+            // Token expirado, envia uma resposta personalizada
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\": \"Token expirado. Por favor, faça login novamente.\"}");
+        } catch (Exception e) {
+            // Token inválido ou outra exceção
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\": \"Token inválido ou outra exceção ocorreu.\"}");
         }
-        filterChain.doFilter(request, response);
     }
+
 
     private String recoverToken(HttpServletRequest request){
         var authHeader = request.getHeader("Authorization");
